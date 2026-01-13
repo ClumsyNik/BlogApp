@@ -1,0 +1,51 @@
+/* Container wrap para laging nasa gitna at may space sa paligid */
+.create-blog-wrapper {
+    min-height: 100vh;
+    background-color: #f8f9fa; /* Optional: light gray bg */
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Image Preview Styling */
+.preview-img-container {
+    width: 100%;
+    max-height: 250px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.preview-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder-img {
+    width: 100%;
+    height: 180px;
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-size: 0.9rem;
+    border: 2px dashed #dee2e6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    .btn-close-abs {
+        font-size: 0.8rem;
+    }
+}
+
+/* Seguradong hindi sasabog ang button content */
+.btn-close-abs {
+    padding: 0.5rem;
+    line-height: 1;
+}

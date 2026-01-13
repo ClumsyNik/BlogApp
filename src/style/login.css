@@ -1,0 +1,51 @@
+/* login.css */
+
+/* Para sa buong page */
+html, body {
+    overflow-x: hidden; /* Iwas sa horizontal scroll */
+    scrollbar-width: none; /* Para sa Firefox */
+    -ms-overflow-style: none;  /* Para sa Internet Explorer at Edge */
+}
+
+/* Para sa Chrome, Safari, at Opera */
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar {
+    display: none;
+}
+
+/* Siguraduhin din na ang login-container ay walang extra scroll */
+.login-container {
+    overflow-y: auto;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+}
+
+.login-container::-webkit-scrollbar {
+    display: none;
+}
+
+.login-card {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #dee2e6 !important;
+    background-color: #ffffff;
+}
+
+@media (max-width: 575px) {
+    .login-card {
+        border: none;
+        max-width: 100%;
+    }
+}
+
+@media (min-width: 576px) {
+    .login-card {
+        max-width: 400px;
+    }
+}
+
+@media (min-width: 992px) {
+    .login-card {
+        max-width: 420px;
+    }
+}

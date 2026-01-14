@@ -6,23 +6,25 @@ export const sendLink = createAsyncThunk<
   void,
   { name: string; email: string },
   { rejectValue: string }
->("auth/sendLink", async ({ name, email }, { rejectWithValue }) => {
-  try {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${
-          import.meta.env.VITE_BASE_URL
-        }/userregistration?name=${encodeURIComponent(
-          name
-        )}&email=${encodeURIComponent(email)}`,
-      },
-    });
-    if (error) return rejectWithValue(error.message);
-  } catch (err: any) {
-    return rejectWithValue(err.message);
+>(
+  "auth/sendLink",
+  async ({ name, email }, { rejectWithValue }) => {
+    try {
+      const redirectUrl = `${import.meta.env.VITE_BASE_URL}/userregistration?name=${encodeURIComponent(
+        name
+      )}&email=${encodeURIComponent(email)}`;
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirectUrl },
+      });
+
+      if (error) return rejectWithValue(error.message);
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
   }
-});
+);
 
 export interface User {
   userID?: string;

@@ -1,0 +1,20 @@
+.registration-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+@media (max-width: 360px) {
+  .registration-card {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 992px) {
+  .registration-card {
+    max-width: 460px;
+  }
+}
+
+.w-60 {
+  width: 60%;
+}

@@ -1,4 +1,3 @@
-// src/MainRoutes.tsx
 import { Route, Routes } from "react-router-dom";
 import BlogList from "./pages/BlogList";
 import Registration from "./pages/Registration";

@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import { registerUser, clearSuccess, clearError } from "../hooks/auth";
 import Alerts from "../components/Alerts";
+import "../style/registration.css";
 
 const Registration = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +26,7 @@ const Registration = () => {
     if (registerUser.fulfilled.match(result)) {
       setTimeout(() => {
         dispatch(clearError());
-        dispatch(clearSuccess())
+        dispatch(clearSuccess());
         setName("");
         setEmail("");
         navigate("/");
@@ -36,13 +37,15 @@ const Registration = () => {
   const goToLogin = () => navigate("/");
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow-lg border-0" style={{ width: 420 }}>
-        <div className="card-body p-4">
+    <div className="d-flex justify-content-center align-items-center min-vh-100 px-3">
+      <div className="card shadow-lg border-0 registration-card">
+        <div className="card-body p-4 p-sm-4 p-md-5">
           <h3 className="text-center fw-bold mb-1">Registration</h3>
+
           <div className="text-center text-muted mb-4">
-            <hr className="mx-auto my-4 text-muted" style={{ width: "60%" }} />
+            <hr className="mx-auto my-4 text-muted w-60" />
           </div>
+
           {success && (
             <Alerts
               type="success"
@@ -50,6 +53,7 @@ const Registration = () => {
               onClose={() => dispatch(clearSuccess())}
             />
           )}
+
           {error && (
             <Alerts
               type="error"
@@ -67,6 +71,7 @@ const Registration = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+
             <FormField
               label="Email address"
               id="email"
@@ -81,7 +86,7 @@ const Registration = () => {
               colorVariant="dark"
               className="w-100 mt-3 justify-content-center gap-2"
             >
-              {loading ? "Registering" : "Register"}
+              {loading ? "Registering..." : "Register"}
             </Button>
           </form>
 

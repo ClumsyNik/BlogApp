@@ -1,13 +1,11 @@
-import {type ReactNode } from "react";
+import { type ReactNode } from "react";
 
-interface Props{
-    children: ReactNode;
+interface Props {
+  children: ReactNode;
 }
 
-const Routing = ({children}: Props) => {
-  return (
-    <div>{children}</div>
-  )
-}
+const Routing = ({ children }: Props) => {
+  return <div>{children}</div>;
+};
 
-export default Routing
+export default Routing;

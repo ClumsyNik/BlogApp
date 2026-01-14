@@ -1,19 +1,14 @@
-/* login.css */
-
-/* Para sa buong page */
 html, body {
-    overflow-x: hidden; /* Iwas sa horizontal scroll */
-    scrollbar-width: none; /* Para sa Firefox */
-    -ms-overflow-style: none;  /* Para sa Internet Explorer at Edge */
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none; 
 }
 
-/* Para sa Chrome, Safari, at Opera */
 html::-webkit-scrollbar, 
 body::-webkit-scrollbar {
     display: none;
 }
 
-/* Siguraduhin din na ang login-container ay walang extra scroll */
 .login-container {
     overflow-y: auto;
     scrollbar-width: none; 

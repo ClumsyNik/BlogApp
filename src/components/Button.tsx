@@ -8,6 +8,7 @@ interface Props {
   className?: string;
   element?: React.ReactNode;
   style?: any;
+  disabled?: boolean;
   colorVariant?:
     | "primary"
     | "secondary"

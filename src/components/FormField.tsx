@@ -45,7 +45,7 @@ const FormField = ({
           className="form-control"
           value={type === "file" ? undefined : value}
           onChange={onChange}
-          accept={accept} 
+          accept={accept}
         />
       )}
     </div>

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import "../style/createblog.css";
 import Alerts from "../components/Alerts";
 import { faX } from "@fortawesome/free-solid-svg-icons/faX";
-import '../style/createblog.css'
+import "../style/createblog.css";
 
 const CreateBlog = () => {
   const navigate = useNavigate();
@@ -23,59 +23,56 @@ const CreateBlog = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-const handleSubmit = () => {
-  if (!user?.userID) {
-    return;
-  }
+  const handleSubmit = () => {
+    if (!user?.userID) {
+      return;
+    }
 
-  const blogPayload = {
-    title,
-    content,
-    authorID: user.userID,
-    image: "",
-  };
+    const blogPayload = {
+      title,
+      content,
+      authorID: user.userID,
+      image: "",
+    };
 
-  if (!image) {
-    dispatch(clearError());
-    dispatch(AddBlog(blogPayload));
-    return;
-  }
+    if (!image) {
+      dispatch(clearError());
+      dispatch(AddBlog(blogPayload));
+      return;
+    }
 
-  const reader = new FileReader();
-  reader.readAsDataURL(image);
+    const reader = new FileReader();
+    reader.readAsDataURL(image);
 
-  reader.onload = (event) => {
-    const img = new Image();
-    img.src = event.target?.result as string;
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
 
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const MAX_WIDTH = 800;
-      const scaleSize = MAX_WIDTH / img.width;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        const scaleSize = MAX_WIDTH / img.width;
 
-      canvas.width = MAX_WIDTH;
-      canvas.height = img.height * scaleSize;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scaleSize;
 
-      const ctx = canvas.getContext("2d");
-      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
-      dispatch(
-        AddBlog({ ...blogPayload, image: compressedBase64 })
-      )
-        .unwrap()
-        .then(() => {
-          setTimeout(() => {
-            dispatch(clearSuccess());
-            handleClearForm();
-            navigate("/bloglist");
-          }, 1500);
-        });
+        dispatch(AddBlog({ ...blogPayload, image: compressedBase64 }))
+          .unwrap()
+          .then(() => {
+            setTimeout(() => {
+              dispatch(clearSuccess());
+              handleClearForm();
+              navigate("/bloglist");
+            }, 1500);
+          });
+      };
     };
   };
-};
-
 
   const handleClearForm = () => {
     setImage(null);

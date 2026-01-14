@@ -15,7 +15,7 @@ const Pagination = ({
 }: Props) => {
   const totalPages = Math.ceil(totalItems / perPage);
 
-  if (totalPages === 0) return null;
+  if (totalPages <= 1) return null;
 
   const pageNumbers = [];
   for (let i = 1; i <= totalPages; i++) {
@@ -27,9 +27,11 @@ const Pagination = ({
       <ul className="pagination justify-content-end mb-0">
         <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
           <Button
-            className=""
             colorVariant="light"
-            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            onClick={() => {
+              if (currentPage > 1) onPageChange(currentPage - 1);
+            }}
           >
             {"Previous"}
           </Button>
@@ -41,7 +43,6 @@ const Pagination = ({
             className={`page-item ${currentPage === num ? "active" : ""}`}
           >
             <Button
-              className=""
               colorVariant={currentPage === num ? "dark" : "light"}
               onClick={() => onPageChange(num)}
             >
@@ -56,9 +57,11 @@ const Pagination = ({
           }`}
         >
           <Button
-            className=""
             colorVariant="light"
-            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            onClick={() => {
+              if (currentPage < totalPages) onPageChange(currentPage + 1);
+            }}
           >
             {"Next"}
           </Button>

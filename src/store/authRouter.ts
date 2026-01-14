@@ -10,7 +10,9 @@ export const useAuthRestore = () => {
   useEffect(() => {
     const restoreUser = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
         if (session?.user?.email) {
           const { data: profile } = await supabase

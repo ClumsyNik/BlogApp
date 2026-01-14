@@ -16,6 +16,7 @@ interface BlogState {
   singleBlog: Blog | null;
   total: number;
   loading: boolean;
+  loadingSingleBlog: boolean;
   error: string | null;
   currentPage: number;
   perPage: number;
@@ -25,6 +26,7 @@ interface BlogState {
 const initialState: BlogState = {
   blogs: [],
   singleBlog: null,
+  loadingSingleBlog: false,
   total: 0,
   loading: false,
   error: null,
@@ -80,7 +82,6 @@ export const fetchBlogsByAuthor = createAsyncThunk(
   }
 );
 
-
 export const updateBlog = createAsyncThunk(
   "blog/updateBlog",
   async (
@@ -108,7 +109,6 @@ export const updateBlog = createAsyncThunk(
   }
 );
 
-
 export const FetchSingleBlog = createAsyncThunk(
   "blog/fetchsingle-blog",
   async ({ id }: { id: number }, thunkAPI) => {
@@ -127,7 +127,6 @@ export const FetchSingleBlog = createAsyncThunk(
     }
   }
 );
-
 
 export const deleteBlog = createAsyncThunk(
   "blog/deleteBlog",
@@ -152,6 +151,12 @@ const blogSlice = createSlice({
     },
     clearSingleBlog: (state) => {
       state.singleBlog = null;
+    },
+    resetBlogState: (state) => {
+      state.singleBlog = null;
+      state.loadingSingleBlog = false;
+      state.error = null;
+      state.success = null;
     },
   },
   extraReducers: (builder) => {
@@ -198,20 +203,19 @@ const blogSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(FetchSingleBlog.pending, (state) => {
-        state.loading = true;
+        state.loadingSingleBlog = true;
         state.error = null;
       })
       .addCase(FetchSingleBlog.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingSingleBlog = false;
         state.singleBlog = action.payload;
       })
       .addCase(FetchSingleBlog.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingSingleBlog = false;
         state.error = action.payload as string;
       })
       .addCase(deleteBlog.pending, (state) => {
         state.loading = true;
-        state.singleBlog = null;
       })
       .addCase(deleteBlog.fulfilled, (state, action) => {
         state.loading = false;
@@ -225,5 +229,6 @@ const blogSlice = createSlice({
   },
 });
 
-export const { clearError, clearSuccess, clearSingleBlog } = blogSlice.actions;
+export const { resetBlogState, clearError, clearSuccess, clearSingleBlog } =
+  blogSlice.actions;
 export default blogSlice.reducer;

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
-import { fetchBlogsByAuthor } from "../hooks/blog";
+import { resetBlogState, fetchBlogsByAuthor } from "../hooks/blog";
 import { logout } from "../hooks/auth";
 import Pagination from "../components/Pagination";
 import Card from "../components/Card";
@@ -15,6 +15,7 @@ import {
   faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Loader from "../components/Loader";
 
 const BlogList = () => {
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ const BlogList = () => {
                 colorVariant="dark"
                 className="d-flex align-items-center px-3"
               >
-                <FontAwesomeIcon icon={faPlus}/>
+                <FontAwesomeIcon icon={faPlus} />
               </Button>
 
               <Button
@@ -85,18 +86,7 @@ const BlogList = () => {
           </header>
         )}
         {loading ? (
-          <div
-            className="bars-loader-wrapper d-flex justify-content-center align-items-center"
-            style={{ height: "60vh" }}
-          >
-            <div className="bars-loader">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-          </div>
+          <Loader></Loader>
         ) : (
           <div className="blog-masonry-grid">
             {blogs.map((blog) => (
@@ -105,7 +95,6 @@ const BlogList = () => {
                 image={blog.image}
                 title={blog.title}
                 content={blog.content}
-                idBadge={blog.id}
                 onTitleClick={() => navigate(`/update-blog/${blog.id}`)}
                 actions={
                   <div className="d-flex align-items-center gap-2">
@@ -118,7 +107,10 @@ const BlogList = () => {
                     </Button>
 
                     <Button
-                      onClick={() => navigate(`/delete/${blog.id}`)}
+                      onClick={() => {
+                        dispatch(resetBlogState());
+                        navigate(`/delete/${blog.id}`);
+                      }}
                       colorVariant="light"
                       className="btn-action-round delete-hover"
                     >

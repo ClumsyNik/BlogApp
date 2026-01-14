@@ -1,12 +1,10 @@
-/* Container wrap para laging nasa gitna at may space sa paligid */
 .create-blog-wrapper {
     min-height: 100vh;
-    background-color: #f8f9fa; /* Optional: light gray bg */
+    background-color: #f8f9fa;
     padding-left: 15px;
     padding-right: 15px;
 }
 
-/* Image Preview Styling */
 .preview-img-container {
     width: 100%;
     max-height: 250px;
@@ -29,7 +27,6 @@
     border: 2px dashed #dee2e6;
 }
 
-/* Responsive adjustments */
 @media (max-width: 576px) {
     .card-body {
         padding: 1.5rem !important;
@@ -44,7 +41,6 @@
     }
 }
 
-/* Seguradong hindi sasabog ang button content */
 .btn-close-abs {
     padding: 0.5rem;
     line-height: 1;

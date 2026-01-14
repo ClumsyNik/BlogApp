@@ -2,44 +2,69 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "../services/supabase";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+const sampleEmail = ["youremail@gmail.com"];
+
+const isValidEmail = (email: string): boolean => {
+  const regex = /^[a-zA-Z0-9]+@gmail\.com$/;
+
+  if (import.meta.env.MODE === "development") {
+    return sampleEmail.includes(email.toLowerCase());
+  }
+
+  return regex.test(email);
+};
+
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (
     { name, email }: { name: string; email: string },
     { rejectWithValue }
   ) => {
-    if (!name || !email) return rejectWithValue("All fields required");
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
 
-    const { data: existingUsers, error: fetchError } = await supabase
-      .from("tbluser")
-      .select("userID")
-      .eq("email", email)
-      .limit(1);
-
-    if (fetchError) return rejectWithValue(fetchError.message);
-
-    if (existingUsers && existingUsers.length > 0) {
-      return rejectWithValue("This email is already registered.");
+    if (!trimmedName || !trimmedEmail) {
+      return rejectWithValue("All fields are required.");
     }
 
-    const { data, error } = await supabase
+    if (!isValidEmail(trimmedEmail)) {
+      return rejectWithValue(
+        "Only Gmail addresses in the format username@gmail.com are accepted"
+      );
+    }
+
+    const { data: existingUsers, error } = await supabase
+      .from("tbluser")
+      .select("userID")
+      .eq("email", trimmedEmail)
+      .limit(1);
+
+    if (error) return rejectWithValue(error.message);
+
+    if (existingUsers?.length) {
+      return rejectWithValue("Email already exists.");
+    }
+
+    const { data, error: insertError } = await supabase
       .from("tbluser")
       .insert({
-        name,
-        email,
+        name: trimmedName,
+        email: trimmedEmail,
         create_timestamp: new Date().toISOString(),
       })
       .select()
       .single();
 
-    if (error) return rejectWithValue(error.message);
+    if (insertError) return rejectWithValue(insertError.message);
 
-    await supabase.auth.signInWithOtp({
-      email,
+    const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+      email: trimmedEmail,
       options: {
-        emailRedirectTo: window.location.origin + "/bloglist",
+        emailRedirectTo: `${window.location.origin}/bloglist`,
       },
     });
+
+    if (magicLinkError) return rejectWithValue(magicLinkError.message);
 
     return data;
   }

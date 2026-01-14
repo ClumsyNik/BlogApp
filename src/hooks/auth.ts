@@ -2,69 +2,88 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "../services/supabase";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-const sampleEmail = ["youremail@gmail.com"];
-
-const isValidEmail = (email: string): boolean => {
-  const regex = /^[a-zA-Z0-9]+@gmail\.com$/;
-
-  if (import.meta.env.MODE === "development") {
-    return sampleEmail.includes(email.toLowerCase());
+export const sendLink = createAsyncThunk<
+  void,
+  { name: string; email: string },
+  { rejectValue: string }
+>("auth/sendLink", async ({ name, email }, { rejectWithValue }) => {
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${
+          import.meta.env.VITE_BASE_URL
+        }/userregistration?name=${encodeURIComponent(
+          name
+        )}&email=${encodeURIComponent(email)}`,
+      },
+    });
+    if (error) return rejectWithValue(error.message);
+  } catch (err: any) {
+    return rejectWithValue(err.message);
   }
+});
 
-  return regex.test(email);
-};
+export interface User {
+  userID?: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  created_at?: string;
+}
 
 export const registerUser = createAsyncThunk(
-  "auth/registerUser",
+  "user/AddUser",
   async (
-    { name, email }: { name: string; email: string },
-    { rejectWithValue }
+    newUser: { name: string; email: string; image?: File | null },
+    thunkAPI
   ) => {
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim().toLowerCase();
+    const { name, email, image } = newUser;
 
-    if (!trimmedName || !trimmedEmail) {
-      return rejectWithValue("All fields are required.");
+    if (!name || !email) {
+      return thunkAPI.rejectWithValue("Name and email are required.");
     }
 
-    if (!isValidEmail(trimmedEmail)) {
-      return rejectWithValue(
+    const isValidEmail = (email: string) =>
+      /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
+    if (!isValidEmail(email)) {
+      return thunkAPI.rejectWithValue(
         "Only Gmail addresses in the format username@gmail.com are accepted"
       );
     }
 
-    const { data: existingUsers, error } = await supabase
+    const { data: existingUsers, error: checkError } = await supabase
       .from("tbluser")
       .select("userID")
-      .eq("email", trimmedEmail)
+      .eq("email", email.trim().toLowerCase())
       .limit(1);
 
-    if (error) return rejectWithValue(error.message);
+    if (checkError) return thunkAPI.rejectWithValue(checkError.message);
+    if (existingUsers?.length)
+      return thunkAPI.rejectWithValue("Email already exists.");
 
-    if (existingUsers?.length) {
-      return rejectWithValue("Email already exists.");
+    let base64Image: string | null = null;
+    if (image) {
+      base64Image = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(image);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (err) => reject(err);
+      });
     }
 
-    const { data, error: insertError } = await supabase
+    const { data, error } = await supabase
       .from("tbluser")
       .insert({
-        name: trimmedName,
-        email: trimmedEmail,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        image: base64Image, // Base64 string
         create_timestamp: new Date().toISOString(),
       })
       .select()
       .single();
 
-    if (insertError) return rejectWithValue(insertError.message);
-
-    const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-      email: trimmedEmail,
-      options: {
-        emailRedirectTo: `${window.location.origin}/bloglist`,
-      },
-    });
-
-    if (magicLinkError) return rejectWithValue(magicLinkError.message);
+    if (error) return thunkAPI.rejectWithValue(error.message);
 
     return data;
   }
@@ -93,14 +112,10 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-export interface User {
-  userID: string;
-  name: string;
-  email: string;
-}
-
 interface AuthState {
   user: User | null;
+  name: string;
+  email: string;
   loading: boolean;
   error: string | null;
   success: string | null;
@@ -108,6 +123,8 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
+  name: "",
+  email: "",
   user: null,
   loading: false,
   error: null,
@@ -119,6 +136,21 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    setPending: (
+      state,
+      action: PayloadAction<{ name: string; email: string }>
+    ) => {
+      state.name = action.payload.name;
+      state.email = action.payload.email;
+      localStorage.setItem("pending_name", action.payload.name);
+      localStorage.setItem("pending_email", action.payload.email);
+    },
+    clearPending: (state) => {
+      state.name = "";
+      state.email = "";
+      localStorage.removeItem("pending_name");
+      localStorage.removeItem("pending_email");
+    },
     setUser(state, action) {
       state.user = action.payload;
     },
@@ -138,6 +170,18 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(sendLink.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(sendLink.fulfilled, (state) => {
+        state.loading = false;
+        state.success = "Check your email for confirmation";
+      })
+      .addCase(sendLink.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to send confirmation";
+      })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -167,6 +211,13 @@ const authSlice = createSlice({
   },
 });
 
-export const { setRestoring, clearSuccess, setUser, logout, clearError } =
-  authSlice.actions;
+export const {
+  setPending,
+  clearPending,
+  setRestoring,
+  clearSuccess,
+  setUser,
+  logout,
+  clearError,
+} = authSlice.actions;
 export default authSlice.reducer;

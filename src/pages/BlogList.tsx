@@ -16,7 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Loader from "../components/Loader";
-
+import ImageAvatar from "../components/ImageAvatar";
 const BlogList = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -78,11 +78,19 @@ const BlogList = () => {
       )}
       <main className="container-xl px-4 mt-5">
         {!loading && (
-          <header className="mb-5">
-            <p className="fw-black mb-1">{user?.name}: Blogs</p>
-            <p className="text-muted small mb-0">
-              {blogs.length} Out Of {total} {total > 1 ? "Posts" : "Post"}
-            </p>
+          <header className="mb-5 d-flex align-items-center gap-3 flex-wrap">
+            <ImageAvatar src={user?.image ?? undefined} size={48} />
+
+            <div>
+              <p className="fw-bold mb-1">
+                {user?.name}
+                <span className="fw-normal">: Blogs</span>
+              </p>
+
+              <p className="text-muted small mb-0">
+                {blogs.length} out of {total} {total === 1 ? "Post" : "Posts"}
+              </p>
+            </div>
           </header>
         )}
         {loading ? (

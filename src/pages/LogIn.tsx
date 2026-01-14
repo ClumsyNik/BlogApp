@@ -51,7 +51,7 @@ const Login = () => {
     }
   };
 
-  const goToRegistration = () => navigate("/userregistration");
+  const goToRegistration = () => navigate("/setaccount");
 
   return (
     <div className="login-container d-flex justify-content-center align-items-center min-vh-100 px-3">

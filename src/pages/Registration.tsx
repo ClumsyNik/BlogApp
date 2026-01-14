@@ -1,27 +1,62 @@
 import Button from "../components/Button";
 import FormField from "../components/FormField";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import { registerUser, clearSuccess, clearError } from "../hooks/auth";
 import Alerts from "../components/Alerts";
 import "../style/registration.css";
+import { supabase } from "../services/supabase";
 
 const Registration = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { success, loading, error } = useSelector(
     (state: RootState) => state.userauth
   );
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const access_token = hash
+      ? new URLSearchParams(hash.replace("#", "")).get("access_token")
+      : null;
+    const refresh_token = hash
+      ? new URLSearchParams(hash.replace("#", "")).get("refresh_token")
+      : null;
+
+    if (access_token && refresh_token) {
+      supabase.auth.setSession({ access_token, refresh_token })
+        .then(({ error }) => {
+          if (error) console.error(error.message);
+        });
+    }
+
+    const queryName =
+      urlParams.get("name") || localStorage.getItem("pending_name") || "";
+    const queryEmail =
+      urlParams.get("email") || localStorage.getItem("pending_email") || "";
+
+    setName(queryName);
+    setEmail(queryEmail);
+
+    if (emailRef.current) {
+      emailRef.current.disabled = true;
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
 
-    const result = await dispatch(registerUser({ name, email }));
+    const result = await dispatch(registerUser({ name, email, image }));
 
     if (registerUser.fulfilled.match(result)) {
       setTimeout(() => {
@@ -29,6 +64,7 @@ const Registration = () => {
         dispatch(clearSuccess());
         setName("");
         setEmail("");
+        setImage(null);
         navigate("/");
       }, 1500);
     }
@@ -53,7 +89,6 @@ const Registration = () => {
               onClose={() => dispatch(clearSuccess())}
             />
           )}
-
           {error && (
             <Alerts
               type="error"
@@ -78,7 +113,21 @@ const Registration = () => {
               type="email"
               align="start"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={() => {}}
+            />
+
+            <FormField
+              label="Profile Image"
+              id="image"
+              type="file"
+              align="start"
+              value=""
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setImage(e.target.files[0]);
+                }
+              }}
+              accept="image/*"
             />
 
             <Button

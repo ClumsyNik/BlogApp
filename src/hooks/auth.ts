@@ -10,7 +10,7 @@ export const sendLink = createAsyncThunk<
   "auth/sendLink",
   async ({ name, email }, { rejectWithValue }) => {
     try {
-      const redirectUrl = `${import.meta.env.VITE_BASE_URL}/userregistration?name=${encodeURIComponent(
+      const redirectUrl = `https://blogappsite.vercel.app/userregistration?name=${encodeURIComponent(
         name
       )}&email=${encodeURIComponent(email)}`;
 

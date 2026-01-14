@@ -1,4 +1,3 @@
-// Login.tsx
 import Button from "../components/Button";
 import FormField from "../components/FormField";
 import { useEffect, useState } from "react";
@@ -93,7 +92,10 @@ const Login = () => {
             <Button
               colorVariant="link"
               className="p-0 text-decoration-none fw-bold"
-              onClick={goToRegistration}
+              onClick={() => {
+                dispatch(clearError());
+                goToRegistration();
+              }}
             >
               Register
             </Button>

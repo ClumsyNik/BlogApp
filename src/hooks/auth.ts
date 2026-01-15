@@ -140,6 +140,16 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (_, { rejectWithValue }) => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 interface AuthState {
   user: User | null;
   name: string;
@@ -209,6 +219,9 @@ const authSlice = createSlice({
       .addCase(sendLink.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to send confirmation";
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
       })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;

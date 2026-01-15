@@ -14,11 +14,6 @@ const CreateAcct = () => {
     (state: RootState) => state.userauth
   );
 
-  useEffect(() => {
-    dispatch(clearError());
-    dispatch(clearSuccess());
-  }, []);
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -51,6 +46,11 @@ const CreateAcct = () => {
       setName("");
       setEmail("");
     }
+
+    useEffect(() => {
+      dispatch(clearError());
+      dispatch(clearSuccess());
+    }, []);
   };
 
   return (

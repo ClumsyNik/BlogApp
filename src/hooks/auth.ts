@@ -13,52 +13,51 @@ export const registerUser = createAsyncThunk<
   any,
   { name: string; email: string; password: string; image?: File | null },
   { rejectValue: string }
->(
-  "auth/registerUser",
-  async ({ name, email, password, image }, { rejectWithValue }) => {
-    const trimmedName = name.trim();
-    const normalizedEmail = email.trim().toLowerCase();
+>("auth/registerUser", async ({ name, email, password, image }, { rejectWithValue }) => {
+  const trimmedName = name.trim();
+  const normalizedEmail = email.trim().toLowerCase();
 
-    if (!trimmedName || !normalizedEmail || !password)
-      return rejectWithValue("Name, email, and password are required");
+  if (!trimmedName || !normalizedEmail || !password)
+    return rejectWithValue("Name, email, and password are required");
 
-    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(normalizedEmail)) {
-      return rejectWithValue("Only Gmail addresses are accepted");
-    }
-
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: normalizedEmail,
-      password,
-    });
-
-    if (authError) return rejectWithValue(authError.message);
-    if (!authData.user) return rejectWithValue("Failed to create account");
-
-    let base64Image: string | null = null;
-    if (image) {
-      base64Image = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(image);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = (err) => reject(err);
-      });
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("tbluser")
-      .insert({
-        auth_id: authData.user.id,
-        name: trimmedName,
-        image: base64Image,
-        create_timestamp: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (profileError) return rejectWithValue(profileError.message);
-    return profile;
+  if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(normalizedEmail)) {
+    return rejectWithValue("Only Gmail addresses are accepted");
   }
-);
+
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: normalizedEmail,
+    password,
+  });
+
+  if (authError) return rejectWithValue(authError.message);
+  if (!authData.user) return rejectWithValue("Failed to create account");
+
+  let base64Image: string | null = null;
+  if (image) {
+    base64Image = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(image);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (err) => reject(err);
+    });
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("tbluser")
+    .insert({
+      auth_id: authData.user.id,
+      name: trimmedName,
+      image: base64Image,
+      create_timestamp: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (profileError) return rejectWithValue(profileError.message);
+
+  return profile;
+});
+
 
 export const loginUser = createAsyncThunk<
   { authUser: any; profile: any },
@@ -70,11 +69,10 @@ export const loginUser = createAsyncThunk<
 
   const normalizedEmail = email.trim().toLowerCase();
 
-  const { data: authData, error: authError } =
-    await supabase.auth.signInWithPassword({
-      email: normalizedEmail,
-      password,
-    });
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email: normalizedEmail,
+    password,
+  });
 
   if (authError) return rejectWithValue(authError.message);
   if (!authData.user) return rejectWithValue("Invalid login credentials");

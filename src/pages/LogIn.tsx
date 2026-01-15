@@ -70,7 +70,7 @@ const Login = () => {
 
           <form onSubmit={handleSubmit}>
             <FormField
-              label="Email address"
+              label="Email Address"
               id="email"
               type="email"
               align="start"

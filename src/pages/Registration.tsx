@@ -13,6 +13,7 @@ const Registration = () => {
   const [name, setName] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -27,7 +28,7 @@ const Registration = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email) return;
+    if (!name || !email || !password) return;
 
     const result = await dispatch(
       registerUser({ name, email, image, password })
@@ -46,9 +47,8 @@ const Registration = () => {
     }
   };
 
-  const goToLogin = () => {
-    navigate("/");
-  };
+  const goToLogin = () => navigate("/");
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 px-3">
       <div className="card shadow-lg border-0 registration-card">
@@ -96,11 +96,24 @@ const Registration = () => {
             <FormField
               label="Password"
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               align="start"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+
+            <div className="form-check mb-3">
+              <input
+                type="checkbox"
+                id="showPassword"
+                className="form-check-input"
+                checked={showPassword}
+                onChange={() => setShowPassword((prev) => !prev)}
+              />
+              <label htmlFor="showPassword" className="form-check-label">
+                Show password
+              </label>
+            </div>
 
             <FormField
               label="Profile Image"
@@ -124,6 +137,7 @@ const Registration = () => {
               {loading ? "Registering..." : "Register"}
             </Button>
           </form>
+
           <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
             <span className="text-muted small">Already have an account?</span>
             <Button colorVariant="link" className="p-0" onClick={goToLogin}>

@@ -12,6 +12,8 @@ import "../style/login.css";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.userauth);
@@ -82,16 +84,29 @@ const Login = () => {
             <FormField
               label="Password"
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               align="start"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
 
+            <div className="form-check mb-3">
+              <input
+                type="checkbox"
+                id="showPassword"
+                className="form-check-input"
+                checked={showPassword}
+                onChange={() => setShowPassword((prev) => !prev)}
+              />
+              <label htmlFor="showPassword" className="form-check-label">
+                Show password
+              </label>
+            </div>
+
             <Button
               type="submit"
               colorVariant="dark"
-              className="w-100 mt-3 py-2"
+              className="w-100 mt-3 py-2 d-flex justify-content-center"
               disabled={loading}
             >
               {loading ? "Logging in..." : "Log In"}

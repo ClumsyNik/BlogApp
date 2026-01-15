@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../components/Button";
 import FormField from "../components/FormField";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,6 +22,11 @@ const CreateBlog = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+
+  useEffect(() => {
+    dispatch(clearError());
+    dispatch(clearSuccess());
+  }, []);
 
   const handleSubmit = () => {
     if (!user?.userID) {

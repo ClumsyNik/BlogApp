@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
 import { sendLink, setPending, clearError, clearSuccess } from "../hooks/auth";
@@ -13,6 +13,11 @@ const CreateAcct = () => {
   const { loading, error, success } = useSelector(
     (state: RootState) => state.userauth
   );
+
+  useEffect(() => {
+    dispatch(clearError());
+    dispatch(clearSuccess());
+  }, []);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

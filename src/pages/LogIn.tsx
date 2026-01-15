@@ -16,6 +16,11 @@ const Login = () => {
   const { loading, error } = useSelector((state: RootState) => state.userauth);
 
   useEffect(() => {
+    dispatch(clearError());
+    dispatch(clearSuccess());
+  }, []);
+
+  useEffect(() => {
     const restoreUser = async () => {
       const {
         data: { session },

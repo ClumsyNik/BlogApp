@@ -38,6 +38,10 @@ const UpdateBlog = () => {
   }, [blog]);
 
   useEffect(() => {
+    dispatch(clearError());
+    dispatch(clearSuccess());
+  }, []);
+  useEffect(() => {
     if (success && !redirect.current) {
       redirect.current = true;
 

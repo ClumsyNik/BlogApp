@@ -22,6 +22,11 @@ const Registration = () => {
   );
 
   useEffect(() => {
+    dispatch(clearError());
+    dispatch(clearSuccess());
+  }, []);
+
+  useEffect(() => {
     const hash = window.location.hash;
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -33,7 +38,8 @@ const Registration = () => {
       : null;
 
     if (access_token && refresh_token) {
-      supabase.auth.setSession({ access_token, refresh_token })
+      supabase.auth
+        .setSession({ access_token, refresh_token })
         .then(({ error }) => {
           if (error) console.error(error.message);
         });

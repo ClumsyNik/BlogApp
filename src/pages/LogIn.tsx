@@ -11,55 +11,55 @@ import "../style/login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.userauth);
 
   useEffect(() => {
     const restoreUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.email) {
-        const { data: profile, error: profileError } = await supabase
+      const { data } = await supabase.auth.getSession();
+      const sessionUser = data.session?.user;
+
+      if (sessionUser) {
+        const { data: profile } = await supabase
           .from("tbluser")
           .select("*")
-          .eq("email", session.user.email)
+          .eq("auth_id", sessionUser.id)
           .maybeSingle();
 
-        if (profile) {
-          dispatch(setUser(profile));
-          navigate("/bloglist");
-        }
-
-        if (profileError)
-          console.error("Error fetching profile:", profileError.message);
+        if (profile) dispatch(setUser(profile));
       }
     };
     restoreUser();
-  }, [dispatch, navigate]);
+  }, [dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) return;
 
-    const resultAction = await dispatch(loginUser({ email }));
+    const resultAction = await dispatch(loginUser({ email, password }));
 
     if (loginUser.fulfilled.match(resultAction)) {
-      dispatch(clearError());
-      dispatch(clearSuccess());
+      dispatch(setUser(resultAction.payload.profile));
       navigate("/bloglist");
     }
   };
 
-
-  const goToRegistration = () => navigate("/setaccount");
+  const goToRegistration = () => {
+    dispatch(clearError());
+    dispatch(clearSuccess());
+    navigate("/userregistration");
+  };
 
   return (
     <div className="login-container d-flex justify-content-center align-items-center min-vh-100 px-3">
-      <div className="card login-card border">
+      <div className="card login-card shadow-sm border-0">
         <div className="card-body p-4 p-md-5">
-          <h3 className="text-center fw-bold mb-1">Login</h3>
-          <p className="text-center text-muted mb-4">Sign in with your email</p>
+          <h3 className="text-center fw-bold mb-2">Login</h3>
+          <p className="text-center text-muted mb-4">
+            Sign in with your email and password
+          </p>
 
           {error && (
             <Alerts
@@ -79,10 +79,20 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
 
+            <FormField
+              label="Password"
+              id="password"
+              type="password"
+              align="start"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
             <Button
               type="submit"
               colorVariant="dark"
-              className="w-100 mt-3 justify-content-center py-2"
+              className="w-100 mt-3 py-2"
+              disabled={loading}
             >
               {loading ? "Logging in..." : "Log In"}
             </Button>
@@ -93,10 +103,7 @@ const Login = () => {
             <Button
               colorVariant="link"
               className="p-0 text-decoration-none fw-bold"
-              onClick={() => {
-                dispatch(clearError());
-                goToRegistration();
-              }}
+              onClick={goToRegistration}
             >
               Register
             </Button>

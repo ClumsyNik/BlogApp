@@ -7,7 +7,6 @@ import UpdateBlog from "./pages/UpdateBlog";
 import DeleteBlog from "./pages/DeleteBlog";
 import RouteGuard from "./store/RouteGuard";
 import { useAuthRestore } from "./store/authRouter";
-import CreateAcct from "./pages/CreateAcct";
 
 const MainRoutes = () => {
   useAuthRestore();
@@ -27,15 +26,6 @@ const MainRoutes = () => {
         element={
           <RouteGuard isPrivate={false}>
             <Registration />
-          </RouteGuard>
-        }
-      />
-
-        <Route
-        path="/setaccount"
-        element={
-          <RouteGuard isPrivate={false}>
-            <CreateAcct />
           </RouteGuard>
         }
       />

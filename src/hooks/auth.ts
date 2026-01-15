@@ -2,93 +2,37 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "../services/supabase";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-export const sendLink = createAsyncThunk<
-  void,
-  { name: string; email: string },
-  { rejectValue: string }
->("auth/sendLink", async ({ name, email }, { rejectWithValue }) => {
-  try {
-    const trimmedEmail = email.trim().toLowerCase();
-    const trimmedName = name.trim();
-
-    if (!trimmedName || !trimmedEmail) {
-      return rejectWithValue("Name and email are required.");
-    }
-
-    const { data: existingUser, error: checkError } = await supabase
-      .from("tbluser")
-      .select("email")
-      .eq("email", trimmedEmail)
-      .single();
-
-    if (existingUser) {
-      return rejectWithValue("Email already registered, Please log in instead");
-    }
-
-    if (checkError && checkError.code !== "PGRST116") {
-      return rejectWithValue("Failed to validate email.");
-    }
-
-    const baseUrl =
-      import.meta.env.VITE_BASE_URL || "https://blogappsite.vercel.app";
-
-    const redirectUrl =
-      `${baseUrl}/userregistration` +
-      `?name=${encodeURIComponent(trimmedName)}` +
-      `&email=${encodeURIComponent(trimmedEmail)}`;
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmedEmail,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
-    });
-
-    if (error) {
-      return rejectWithValue(error.message);
-    }
-  } catch {
-    return rejectWithValue("Failed to send link.");
-  }
-});
-
 export interface User {
   userID?: string;
   name: string;
-  email: string;
   image?: string | null;
   created_at?: string;
 }
 
-export const registerUser = createAsyncThunk(
-  "user/AddUser",
-  async (
-    newUser: { name: string; email: string; image?: File | null },
-    thunkAPI
-  ) => {
-    const { name, email, image } = newUser;
+export const registerUser = createAsyncThunk<
+  any,
+  { name: string; email: string; password: string; image?: File | null },
+  { rejectValue: string }
+>(
+  "auth/registerUser",
+  async ({ name, email, password, image }, { rejectWithValue }) => {
+    const trimmedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!name || !email) {
-      return thunkAPI.rejectWithValue("Name and email are required.");
+    if (!trimmedName || !normalizedEmail || !password)
+      return rejectWithValue("Name, email, and password are required");
+
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(normalizedEmail)) {
+      return rejectWithValue("Only Gmail addresses are accepted");
     }
 
-    const isValidEmail = (email: string) =>
-      /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
-    if (!isValidEmail(email)) {
-      return thunkAPI.rejectWithValue(
-        "Only Gmail addresses in the format username@gmail.com are accepted"
-      );
-    }
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: normalizedEmail,
+      password,
+    });
 
-    const { data: existingUsers, error: checkError } = await supabase
-      .from("tbluser")
-      .select("userID")
-      .eq("email", email.trim().toLowerCase())
-      .limit(1);
-
-    if (checkError) return thunkAPI.rejectWithValue(checkError.message);
-    if (existingUsers?.length)
-      return thunkAPI.rejectWithValue("Email already exists.");
+    if (authError) return rejectWithValue(authError.message);
+    if (!authData.user) return rejectWithValue("Failed to create account");
 
     let base64Image: string | null = null;
     if (image) {
@@ -100,45 +44,52 @@ export const registerUser = createAsyncThunk(
       });
     }
 
-    const { data, error } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("tbluser")
       .insert({
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        image: base64Image, // Base64 string
+        auth_id: authData.user.id,
+        name: trimmedName,
+        image: base64Image,
         create_timestamp: new Date().toISOString(),
       })
       .select()
       .single();
 
-    if (error) return thunkAPI.rejectWithValue(error.message);
-
-    return data;
+    if (profileError) return rejectWithValue(profileError.message);
+    return profile;
   }
 );
 
-export const loginUser = createAsyncThunk(
-  "auth/loginUser",
-  async ({ email }: { email: string }, { rejectWithValue }) => {
-    if (!email) return rejectWithValue("Email is required");
+export const loginUser = createAsyncThunk<
+  { authUser: any; profile: any },
+  { email: string; password: string },
+  { rejectValue: string }
+>("auth/loginUser", async ({ email, password }, { rejectWithValue }) => {
+  if (!email || !password)
+    return rejectWithValue("Email and password are required");
 
-    const { data: existingUser, error: fetchError } = await supabase
-      .from("tbluser")
-      .select("*")
-      .eq("email", email)
-      .maybeSingle();
+  const normalizedEmail = email.trim().toLowerCase();
 
-    if (fetchError) return rejectWithValue(fetchError.message);
+  const { data: authData, error: authError } =
+    await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
 
-    if (!existingUser) {
-      return rejectWithValue(
-        "This email is not registered. Please register first."
-      );
-    }
+  if (authError) return rejectWithValue(authError.message);
+  if (!authData.user) return rejectWithValue("Invalid login credentials");
 
-    return existingUser;
-  }
-);
+  const { data: profile, error: profileError } = await supabase
+    .from("tbluser")
+    .select("*")
+    .eq("auth_id", authData.user.id)
+    .maybeSingle();
+
+  if (profileError) return rejectWithValue(profileError.message);
+  if (!profile) return rejectWithValue("User profile not found");
+
+  return { authUser: authData.user, profile };
+});
 
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
@@ -152,6 +103,7 @@ export const logoutUser = createAsyncThunk(
 interface AuthState {
   user: User | null;
   name: string;
+  authUser: any | null;
   email: string;
   loading: boolean;
   error: string | null;
@@ -162,6 +114,7 @@ interface AuthState {
 const initialState: AuthState = {
   name: "",
   email: "",
+  authUser: null,
   user: null,
   loading: false,
   error: null,
@@ -207,18 +160,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(sendLink.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(sendLink.fulfilled, (state) => {
-        state.loading = false;
-        state.success = "Check your email for confirmation";
-      })
-      .addCase(sendLink.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to send confirmation";
-      })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
       })
@@ -242,7 +183,8 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.profile;
+        state.user = action.payload.authUser;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;

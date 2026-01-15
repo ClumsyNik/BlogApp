@@ -142,11 +142,10 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
-  async (_, { rejectWithValue }) => {
+  async (_, { dispatch, rejectWithValue }) => {
+    dispatch(logout());
     const { error } = await supabase.auth.signOut();
-    if (error) {
-      return rejectWithValue(error.message);
-    }
+    if (error) return rejectWithValue(error.message);
   }
 );
 

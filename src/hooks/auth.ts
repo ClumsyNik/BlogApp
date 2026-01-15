@@ -6,34 +6,51 @@ export const sendLink = createAsyncThunk<
   void,
   { name: string; email: string },
   { rejectValue: string }
->(
-  "auth/sendLink",
-  async ({ name, email }, { rejectWithValue }) => {
-    try {
-      const baseUrl =
-        import.meta.env.VITE_BASE_URL || "https://blogappsite.vercel.app";
+>("auth/sendLink", async ({ name, email }, { rejectWithValue }) => {
+  try {
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedName = name.trim();
 
-      const redirectUrl =
-        `${baseUrl}/userregistration` +
-        `?name=${encodeURIComponent(name)}` +
-        `&email=${encodeURIComponent(email)}`;
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectUrl,
-        },
-      });
-
-      if (error) {
-        return rejectWithValue(error.message);
-      }
-    } catch {
-      return rejectWithValue("Failed to send link.");
+    if (!trimmedName || !trimmedEmail) {
+      return rejectWithValue("Name and email are required.");
     }
-  }
-);
 
+    const { data: existingUser, error: checkError } = await supabase
+      .from("tbluser")
+      .select("email")
+      .eq("email", trimmedEmail)
+      .single();
+
+    if (existingUser) {
+      return rejectWithValue("Email already registered, Please log in instead");
+    }
+
+    if (checkError && checkError.code !== "PGRST116") {
+      return rejectWithValue("Failed to validate email.");
+    }
+
+    const baseUrl =
+      import.meta.env.VITE_BASE_URL || "https://blogappsite.vercel.app";
+
+    const redirectUrl =
+      `${baseUrl}/userregistration` +
+      `?name=${encodeURIComponent(trimmedName)}` +
+      `&email=${encodeURIComponent(trimmedEmail)}`;
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: trimmedEmail,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      return rejectWithValue(error.message);
+    }
+  } catch {
+    return rejectWithValue("Failed to send link.");
+  }
+});
 
 export interface User {
   userID?: string;

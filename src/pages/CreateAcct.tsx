@@ -4,11 +4,13 @@ import type { RootState, AppDispatch } from "../store";
 import { sendLink, setPending, clearError, clearSuccess } from "../hooks/auth";
 import Alerts from "../components/Alerts";
 import Button from "../components/Button";
+import { useNavigate } from "react-router-dom";
 
 const isValidEmail = (email: string) =>
   /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
 
 const CreateAcct = () => {
+  const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error, success } = useSelector(
     (state: RootState) => state.userauth
@@ -52,6 +54,8 @@ const CreateAcct = () => {
       dispatch(clearSuccess());
     }, []);
   };
+
+    const goToLogin = () => navigate("/");
 
   return (
     <div
@@ -157,6 +161,12 @@ const CreateAcct = () => {
         >
           We will send you a link to complete your account setup.
         </p>
+                  <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
+            <span className="text-muted small">Already have an account?</span>
+            <Button colorVariant="link" className="p-0" onClick={goToLogin}>
+              Login
+            </Button>
+          </div>
       </div>
     </div>
   );

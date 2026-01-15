@@ -76,7 +76,6 @@ const Registration = () => {
     }
   };
 
-  const goToLogin = () => navigate("/");
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 px-3">
@@ -145,12 +144,6 @@ const Registration = () => {
             </Button>
           </form>
 
-          <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
-            <span className="text-muted small">Already have an account?</span>
-            <Button colorVariant="link" className="p-0" onClick={goToLogin}>
-              Login
-            </Button>
-          </div>
         </div>
       </div>
     </div>

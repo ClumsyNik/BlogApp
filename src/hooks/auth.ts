@@ -10,21 +10,30 @@ export const sendLink = createAsyncThunk<
   "auth/sendLink",
   async ({ name, email }, { rejectWithValue }) => {
     try {
-      const redirectUrl = `https://blogappsite.vercel.app/userregistration?name=${encodeURIComponent(
-        name
-      )}&email=${encodeURIComponent(email)}`;
+      const baseUrl =
+        import.meta.env.VITE_BASE_URL || "https://blogappsite.vercel.app";
+
+      const redirectUrl =
+        `${baseUrl}/userregistration` +
+        `?name=${encodeURIComponent(name)}` +
+        `&email=${encodeURIComponent(email)}`;
 
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: redirectUrl },
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
       });
 
-      if (error) return rejectWithValue(error.message);
-    } catch (err: any) {
-      return rejectWithValue(err.message);
+      if (error) {
+        return rejectWithValue(error.message);
+      }
+    } catch {
+      return rejectWithValue("Failed to send magic link.");
     }
   }
 );
+
 
 export interface User {
   userID?: string;

@@ -1,11 +1,11 @@
 interface ImageAvatarProps {
   image?: string;
-  src?: string; // optional alias
+  src?: string; 
   size?: number;
 }
 
 const ImageAvatar: React.FC<ImageAvatarProps> = ({ image, src, size = 40 }) => {
-  const avatarSrc = image || src; // prioritize `image`, fallback to `src`
+  const avatarSrc = image || src;
   return (
     <div
       style={{

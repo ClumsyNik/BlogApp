@@ -29,7 +29,7 @@ export const sendLink = createAsyncThunk<
         return rejectWithValue(error.message);
       }
     } catch {
-      return rejectWithValue("Failed to send magic link.");
+      return rejectWithValue("Failed to send link.");
     }
   }
 );

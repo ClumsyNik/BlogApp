@@ -20,10 +20,6 @@ export const registerUser = createAsyncThunk<
   if (!trimmedName || !normalizedEmail || !password)
     return rejectWithValue("Name, email, and password are required");
 
-  if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(normalizedEmail)) {
-    return rejectWithValue("Only Gmail addresses are accepted");
-  }
-
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: normalizedEmail,
     password,

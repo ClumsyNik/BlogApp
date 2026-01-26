@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import { registerUser, clearSuccess, clearError } from "../hooks/auth";
-import Alerts from "../components/Alerts";
 import "../style/registration.css";
 
 const Registration = () => {
@@ -18,35 +17,46 @@ const Registration = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { success, loading, error } = useSelector(
-    (state: RootState) => state.userauth
+    (state: RootState) => state.userauth,
   );
 
+  // Clear error & success mount
   useEffect(() => {
     dispatch(clearError());
     dispatch(clearSuccess());
-  }, []);
+    return () => {
+      dispatch(clearError());
+      dispatch(clearSuccess());
+    };
+  }, [dispatch]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email || !password) return;
+  //Clear error
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => dispatch(clearError()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, dispatch]);
 
-    const result = await dispatch(
-      registerUser({ name, email, image, password })
-    );
-
-    if (registerUser.fulfilled.match(result)) {
-      setTimeout(() => {
-        dispatch(clearError());
+  //Clear Success
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
         dispatch(clearSuccess());
-        setName("");
-        setEmail("");
-        setPassword("");
-        setImage(null);
         navigate("/");
       }, 1500);
+      return () => clearTimeout(timer);
     }
+  }, [success, dispatch, navigate]);
+
+  //Submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    await dispatch(registerUser({ name, email, image, password }));
   };
 
+  //LogIN page 
   const goToLogin = () => navigate("/");
 
   return (
@@ -56,22 +66,35 @@ const Registration = () => {
           <h3 className="text-center fw-bold mb-1">Registration</h3>
 
           <div className="text-center text-muted mb-4">
-            <hr className="mx-auto my-4 text-muted w-60" />
+            <hr className="mx-auto my-4 text-muted" style={{ width: "60%" }} />
           </div>
 
-          {success && (
-            <Alerts
-              type="success"
-              message={success}
-              onClose={() => dispatch(clearSuccess())}
-            />
-          )}
           {error && (
-            <Alerts
-              type="error"
-              message={error}
-              onClose={() => dispatch(clearError())}
-            />
+            <p
+              className="text-error text-center"
+              style={{
+                textAlign: "center",
+                color: "#991b1b",
+                fontWeight: 500,
+                margin: "10px 0",
+              }}
+            >
+              {error}
+            </p>
+          )}
+          
+          {success && (
+            <p
+              className="text-success text-center"
+              style={{
+                textAlign: "center",
+                color: "#0FA809",
+                fontWeight: 500,
+                margin: "10px 0",
+              }}
+            >
+              {success}
+            </p>
           )}
 
           <form onSubmit={handleSubmit}>
@@ -82,6 +105,7 @@ const Registration = () => {
               align="start"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              classname="form-control"
             />
 
             <FormField
@@ -91,6 +115,7 @@ const Registration = () => {
               align="start"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              classname="form-control"
             />
 
             <FormField
@@ -100,9 +125,10 @@ const Registration = () => {
               align="start"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              classname="form-control"
             />
 
-            <div className="form-check mb-3">
+            <div className="form-check mt-2">
               <input
                 type="checkbox"
                 id="showPassword"
@@ -120,19 +146,19 @@ const Registration = () => {
               id="image"
               type="file"
               align="start"
-              value=""
               onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  setImage(e.target.files[0]);
-                }
+                const target = e.target as HTMLInputElement;
+                if (target.files && target.files[0]) setImage(target.files[0]);
               }}
               accept="image/*"
+              classname="form-control"
             />
 
             <Button
               type="submit"
               colorVariant="dark"
               className="w-100 mt-3 justify-content-center gap-2"
+              disabled={loading}
             >
               {loading ? "Registering..." : "Register"}
             </Button>

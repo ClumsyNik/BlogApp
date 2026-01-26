@@ -1,0 +1,132 @@
+.menu-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.menu-btn {
+    font-size: 20px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    user-select: none;
+}
+
+.menu-wrapper .dropdown-menu {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 120px;
+    z-index: 10;
+    display: none;
+}
+
+.menu-wrapper:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    cursor: pointer;
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    transform: scale(0.8);
+    animation: zoomIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes zoomIn {
+    to {
+        transform: scale(1);
+    }
+}
+
+.alert-modal {
+    background: #fff;
+    color: #000;
+    padding: 25px 30px;
+    border-radius: 12px;
+    min-width: 350px;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    transform: scale(0.8);
+    animation: alertIn 0.25s forwards;
+}
+
+.alert-modal.success,
+.alert-modal.error,
+.alert-modal.warning {
+    border-left: 6px solid #000;
+}
+
+.alert-message {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.alert-message button {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.alert-message .btn-clear {
+    background: #ccc;
+    color: #000;
+}
+
+.alert-message .btn-submit {
+    background: #000;
+    color: #fff;
+}
+
+@keyframes alertIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes alertOut {
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}

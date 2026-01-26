@@ -1,40 +1,23 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import "../style/alert.css";
-import {
-  faCircleCheck,
-  faCircleExclamation,
-  faTriangleExclamation,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import React from "react";
+import '../style/alert.css'
 
 interface AlertProps {
   type?: "success" | "error" | "warning";
-  message: any;
+  message: React.ReactNode;
   onClose?: () => void;
 }
 
-const Alerts = ({ type = "success", message, onClose }: AlertProps) => {
-  const icons = {
-    success: faCircleCheck,
-    error: faCircleExclamation,
-    warning: faTriangleExclamation,
-  };
-
+const Alerts = ({ message, onClose }: AlertProps) => {
   return (
-    <div className="alert-container">
-      <div className={`alert-box ${type}`} role="alert">
-        <FontAwesomeIcon icon={icons[type]} className="alert-icon" />
-
-        <p className="alert-message">{message}</p>
+    <div className="alert-overlay">
+      <div className="alert-modal">
+        <div className="alert-message">{message}</div>
 
         {onClose && (
-          <button
-            className="alert-close"
-            onClick={onClose}
-            aria-label="Close alert"
-          >
-            <FontAwesomeIcon icon={faXmark} />
-          </button>
+          <div className="alert-buttons">
+            <button className="btn-clear" onClick={onClose}>Cancel</button>
+            <button className="btn-submit" onClick={onClose}>OK</button>
+          </div>
         )}
       </div>
     </div>

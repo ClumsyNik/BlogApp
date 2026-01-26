@@ -3,10 +3,10 @@ import BlogList from "./pages/BlogList";
 import Registration from "./pages/Registration";
 import Login from "./pages/LogIn";
 import CreateBlog from "./pages/CreateBlog";
-import UpdateBlog from "./pages/UpdateBlog";
-import DeleteBlog from "./pages/DeleteBlog";
 import RouteGuard from "./store/RouteGuard";
 import { useAuthRestore } from "./store/authRouter";
+import ViewPost from "./pages/ViewPost";
+import EditPost from "./pages/EditPost";
 
 const MainRoutes = () => {
   useAuthRestore();
@@ -47,18 +47,19 @@ const MainRoutes = () => {
         }
       />
       <Route
-        path="/update-blog/:id"
+        path="bloglist/blog/:id"
         element={
           <RouteGuard isPrivate={true}>
-            <UpdateBlog />
+            <ViewPost />
           </RouteGuard>
         }
       />
+
       <Route
-        path="/delete/:id"
+        path="bloglist/edit-blog/:id"
         element={
           <RouteGuard isPrivate={true}>
-            <DeleteBlog />
+            <EditPost />
           </RouteGuard>
         }
       />

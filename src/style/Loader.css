@@ -1,0 +1,45 @@
+.bars-loader {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    height: 40px;
+}
+
+.bars-loader div {
+    width: 6px;
+    height: 100%;
+    background: #333;
+    animation: bounce-bar 0.8s infinite ease-in-out;
+}
+
+.bars-loader div:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.bars-loader div:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.bars-loader div:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.bars-loader div:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.bars-loader div:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce-bar {
+
+    0%,
+    100% {
+        transform: scaleY(0.3);
+    }
+
+    50% {
+        transform: scaleY(1);
+    }
+}

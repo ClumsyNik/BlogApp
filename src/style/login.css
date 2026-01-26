@@ -1,17 +1,18 @@
-html, body {
+html,
+body {
     overflow-x: hidden;
     scrollbar-width: none;
-    -ms-overflow-style: none; 
+    -ms-overflow-style: none;
 }
 
-html::-webkit-scrollbar, 
+html::-webkit-scrollbar,
 body::-webkit-scrollbar {
     display: none;
 }
 
 .login-container {
     overflow-y: auto;
-    scrollbar-width: none; 
+    scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
@@ -43,4 +44,20 @@ body::-webkit-scrollbar {
     .login-card {
         max-width: 420px;
     }
+}
+
+.login-card .login-field input[type="email"],
+.login-card .login-field input[type="password"],
+.login-card .login-field button {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.login-checkbox {
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }

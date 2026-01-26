@@ -20,6 +20,7 @@ interface Props {
     | "link"
     | "danger";
   type?: "button" | "submit" | "reset";
+  title?: string
 }
 
 const Button = ({
@@ -30,11 +31,13 @@ const Button = ({
   className = "",
   element,
   type = "button",
+  title
 }: Props) => {
   return (
     <button
       type={type}
       onClick={onClick}
+      title={title}
       className={`btn btn-${colorVariant} d-flex align-items-center gap-2 ${className}`}
     >
       {icon &&

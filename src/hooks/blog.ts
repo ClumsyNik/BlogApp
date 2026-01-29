@@ -397,6 +397,147 @@ export const addComment = createAsyncThunk<
   }
 });
 
+
+//Delete Comment
+export const deleteComment = createAsyncThunk<
+  { commentID: string; blogID: string },
+  { commentID: string; userID: string; blogID: string },
+  { rejectValue: string }
+>(
+  "blog/deleteComment",
+  async ({ commentID, userID, blogID }, thunkAPI) => {
+    try {
+      const { data: existing, error: fetchErr } = await supabase
+        .from("tblcomment")
+        .select("*")
+        .eq("commentID", commentID)
+        .single();
+      if (fetchErr) {
+        console.error("Fetch error:", fetchErr);
+        return thunkAPI.rejectWithValue(fetchErr.message);
+      }
+      if (!existing) {
+        return thunkAPI.rejectWithValue("Comment not found");
+      }
+
+      if (existing.userID !== userID) {
+        return thunkAPI.rejectWithValue("Unauthorized delete");
+      }
+
+      const { data, error } = await supabase
+        .from("tblcomment")
+        .delete()
+        .eq("commentID", commentID)
+        .select();
+
+      console.log("Delete result:", data);
+
+      if (error) {
+        console.error("Delete error:", error);
+        return thunkAPI.rejectWithValue(error.message);
+      }
+
+      if (!data || data.length === 0) {
+        return thunkAPI.rejectWithValue("Delete blocked (likely RLS policy)");
+      }
+
+      return { commentID, blogID };
+    } catch (err: any) {
+      console.error("Thunk crash:", err);
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
+
+//Edit Comment
+export const editComment = createAsyncThunk<
+  BlogComment,
+  { commentID: string; userID: string; content: string; file?: File; removeImage?: boolean },
+  { rejectValue: string }
+>("blog/editComment", async ({ commentID, userID, content, file, removeImage }, thunkAPI) => {
+  try {
+    let uploadedImagePath: string | null | undefined = undefined;
+
+    if (file) {
+      uploadedImagePath = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target?.result as string;
+
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const MAX_WIDTH = 800;
+            const scaleSize = MAX_WIDTH / img.width;
+
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return reject("Canvas not supported");
+
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+            if (compressedBase64.length > 900_000)
+              return reject("Please choose a smaller image.");
+
+            resolve(compressedBase64);
+          };
+
+          img.onerror = () => reject("Image load failed");
+        };
+
+        reader.onerror = () => reject("File reading failed");
+      });
+    }
+
+    if (removeImage) uploadedImagePath = null;
+
+    const updatePayload: any = { content };
+
+    if (uploadedImagePath !== undefined) {
+      updatePayload.imagePath = uploadedImagePath;
+    }
+
+    const { error: updateError } = await supabase
+      .from("tblcomment")
+      .update(updatePayload)
+      .eq("commentID", commentID)
+      .eq("userID", userID);
+
+    if (updateError)
+      return thunkAPI.rejectWithValue(updateError.message);
+
+    const { data, error } = await supabase
+      .from("vw_comment_with_user")
+      .select("*")
+      .eq("commentID", commentID)
+      .single();
+
+    if (error || !data)
+      return thunkAPI.rejectWithValue(error?.message ?? "Failed to fetch comment");
+
+    return {
+      commentID: data.commentID,
+      blogID: data.blogID,
+      userID: data.userID,
+      content: data.content,
+      created_at: data.created_at ?? undefined,
+      userName: data.userName ?? "User",
+      userAvatar: data.userAvatar ?? undefined,
+      imagePath: data.imagePath ?? undefined,
+    };
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(err.message);
+  }
+});
+
+
 // FETCH SINGLE BLOG
 export const fetchSingleBlog = createAsyncThunk<
   Blog,
@@ -545,14 +686,12 @@ const blogSlice = createSlice({
             ...updated,
           };
         }
-
         if (state.singleBlog?.id === updated.id) {
           state.singleBlog = {
             ...state.singleBlog,
             ...updated,
           };
         }
-
         state.success = "Blog updated successfully";
       })
       .addCase(UpdateBlog.rejected, (state, action) => {
@@ -562,6 +701,32 @@ const blogSlice = createSlice({
       .addCase(DeleteBlog.fulfilled, (state, action) => {
         state.blogs = state.blogs.filter((blog) => blog.id !== action.payload);
         state.success = "Blog deleted successfully!";
+      })
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        const { blogID, commentID } = action.payload;
+
+        const blog = state.blogs.find(b => b.id === blogID);
+
+        if (blog?.comments) {
+          blog.comments = blog.comments.filter(c => c.commentID !== commentID);
+        }
+      })
+      .addCase(editComment.fulfilled, (state, action: PayloadAction<BlogComment>) => {
+        const updated = action.payload;
+
+        if (state.singleBlog?.comments) {
+          const index = state.singleBlog.comments.findIndex(c => c.commentID === updated.commentID);
+          if (index !== -1) {
+            state.singleBlog.comments[index] = updated;
+          }
+        }
+        const blog = state.blogs.find(b => b.id === updated.blogID);
+        if (blog?.comments) {
+          const index = blog.comments.findIndex(c => c.commentID === updated.commentID);
+          if (index !== -1) {
+            blog.comments[index] = updated;
+          }
+        }
       });
   },
 });

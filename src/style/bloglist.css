@@ -307,3 +307,40 @@
 .dropdown-item:hover {
   background-color: #f3f4f6;
 }
+/*  */
+.comment-bubble {
+  background: #f3f4f6;
+  padding: 8px 14px;
+  border-radius: 20px;
+  max-width: 90%;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+.comment-menu-wrapper {
+  flex-shrink: 0;
+}
+
+.comment-menu-wrapper:hover .comment-menu {
+  display: block;
+}
+
+.comment-menu {
+  right: 0;
+  top: 100%;
+  min-width: 80px;
+  z-index: 10;
+}
+
+.comment-menu-item {
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.comment-menu-item:hover {
+  background-color: #f0f2f5;
+}

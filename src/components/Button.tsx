@@ -7,8 +7,9 @@ interface Props {
   icon?: IconProp | string;
   className?: string;
   element?: React.ReactNode;
-  style?: any;
+  style?: React.CSSProperties;
   disabled?: boolean;
+  size?: "sm" | "md" | "lg";
   colorVariant?:
     | "primary"
     | "secondary"
@@ -20,7 +21,7 @@ interface Props {
     | "link"
     | "danger";
   type?: "button" | "submit" | "reset";
-  title?: string
+  title?: string;
 }
 
 const Button = ({
@@ -31,14 +32,19 @@ const Button = ({
   className = "",
   element,
   type = "button",
-  title
+  title,
+  disabled = false,
+  size = "md",
+  style
 }: Props) => {
   return (
     <button
       type={type}
       onClick={onClick}
       title={title}
-      className={`btn btn-${colorVariant} d-flex align-items-center gap-2 ${className}`}
+      disabled={disabled}
+      style={style}
+      className={`btn btn-${colorVariant} btn-${size} d-flex align-items-center gap-2 ${className}`}
     >
       {icon &&
         (typeof icon === "string" ? (
@@ -47,7 +53,7 @@ const Button = ({
           <FontAwesomeIcon icon={icon} />
         ))}
 
-      <span>{children}</span>
+      {children && <span>{children}</span>}
 
       {element}
     </button>
